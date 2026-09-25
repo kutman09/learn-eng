@@ -1,0 +1,40 @@
+@import './variables.scss';
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: $font-family;
+  background-color: $bg-main;
+  color: $text-main;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+// Typography resets
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: $text-main;
+  line-height: 1.3;
+}
+
+// Container helper
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
