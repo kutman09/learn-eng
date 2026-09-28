@@ -1,12 +1,12 @@
-export type ExerciseType = 'fill-gap' | 'multiple-choice' | 'matching' | 'sentence-builder' | 'translate';
-export type ExerciseCategory = 'guided' | 'free' | 'test';
+export type ExerciseType = 'fill-gap' | 'multiple-choice' | 'matching' | 'sentence-builder' | 'translate' | 'sort' | 'error-correction' | 'speaking' | 'exit-ticket';
+export type ExerciseCategory = 'warmup' | 'guided' | 'free' | 'test' | 'speaking' | 'exit-ticket';
 
 export interface ExerciseBase {
   id: string;
   type: ExerciseType;
   category: ExerciseCategory;
   instruction: string;
-  subtopicTag?: string; // e.g. "affirmative", "negative", "vocabulary"
+  subtopicTag?: string;
 }
 
 export interface FillGapExercise extends ExerciseBase {
@@ -14,7 +14,7 @@ export interface FillGapExercise extends ExerciseBase {
   textBefore: string;
   textAfter: string;
   correctAnswer: string;
-  options: string[]; // e.g., ["am", "is", "are"]
+  options: string[];
 }
 
 export interface MultipleChoiceExercise extends ExerciseBase {
@@ -41,12 +41,37 @@ export interface TranslateExercise extends ExerciseBase {
   correctEnglish: string;
 }
 
-export type Exercise = FillGapExercise | MultipleChoiceExercise | MatchingExercise | SentenceBuilderExercise | TranslateExercise;
+export interface SortExercise extends ExerciseBase {
+  type: 'sort';
+  categories: string[];
+  items: { word: string; category: string }[];
+}
+
+export interface ErrorCorrectionExercise extends ExerciseBase {
+  type: 'error-correction';
+  wrongSentence: string;
+  correctSentence: string;
+  explanation: string;
+}
+
+export interface SpeakingExercise extends ExerciseBase {
+  type: 'speaking';
+  prompts: string[];
+  expectedKeywords: string[];
+  sampleAnswer: string;
+}
+
+export interface ExitTicketExercise extends ExerciseBase {
+  type: 'exit-ticket';
+  questions: string[];
+}
+
+export type Exercise = FillGapExercise | MultipleChoiceExercise | MatchingExercise | SentenceBuilderExercise | TranslateExercise | SortExercise | ErrorCorrectionExercise | SpeakingExercise | ExitTicketExercise;
 
 export interface TheoryBlockData {
   id: string;
   title: string;
-  content: string; // Markdown or plain text with basic tags
+  content: string;
 }
 
 export interface VocabularyWord {
@@ -55,6 +80,8 @@ export interface VocabularyWord {
   russian: string;
   transcription: string;
   example: string;
+  emoji?: string;
+  tags?: string[]; // e.g. countable/uncountable
 }
 
 export interface TopicData {
@@ -62,9 +89,10 @@ export interface TopicData {
   title: string;
   description: string;
   isComingSoon?: boolean;
+  goals?: string[];
   warmup: {
     context: string;
-    dialogue: { en: string; ru: string }[];
+    dialogue?: { en: string; ru: string }[]; // Make dialogue optional for the new topic
   };
   theory: TheoryBlockData[];
   vocabulary: VocabularyWord[];

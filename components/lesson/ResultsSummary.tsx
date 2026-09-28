@@ -8,9 +8,10 @@ interface Props {
   scoreBreakdown: ScoreBreakdown;
   onRetryTest: () => void;
   onGoHome: () => void;
+  onGoToTheory?: (subtopic: string) => void;
 }
 
-export const ResultsSummary: React.FC<Props> = ({ topic, scoreBreakdown, onRetryTest, onGoHome }) => {
+export const ResultsSummary: React.FC<Props> = ({ topic, scoreBreakdown, onRetryTest, onGoHome, onGoToTheory }) => {
   const score = scoreBreakdown.totalScore;
   
   let resultText = '';
@@ -63,9 +64,19 @@ export const ResultsSummary: React.FC<Props> = ({ topic, scoreBreakdown, onRetry
       <div style={{ textAlign: 'left', margin: '32px 0', padding: '16px', backgroundColor: '#FAFAFA', borderRadius: '8px' }}>
         <h4 style={{ marginBottom: '16px' }}>Разбивка по подтемам:</h4>
         {Object.entries(scoreBreakdown.subtopics).map(([sub, perc]) => (
-          <div key={sub} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div key={sub} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #E0E0E0' }}>
             <span style={{ textTransform: 'capitalize' }}>{sub}</span>
-            <strong>{perc}%</strong>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <strong>{perc}%</strong>
+              {perc < 70 && onGoToTheory && (
+                <button 
+                  onClick={() => onGoToTheory(sub)}
+                  style={{ background: 'none', border: '1px solid #FFB74D', color: '#FFB74D', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+                >
+                  Повторить теорию
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>

@@ -16,6 +16,10 @@ import { ExerciseMatching } from '../../../components/lesson/ExerciseMatching';
 import { ExerciseSentenceBuilder } from '../../../components/lesson/ExerciseSentenceBuilder';
 import { ExerciseTranslate } from '../../../components/lesson/ExerciseTranslate';
 import { ResultsSummary } from '../../../components/lesson/ResultsSummary';
+import { ExerciseSort } from '../../../components/lesson/ExerciseSort';
+import { ExerciseErrorCorrection } from '../../../components/lesson/ExerciseErrorCorrection';
+import { ExerciseSpeaking } from '../../../components/lesson/ExerciseSpeaking';
+import { ExerciseExitTicket } from '../../../components/lesson/ExerciseExitTicket';
 import { Exercise, UserAnswer } from '../../../types';
 
 export default function TopicPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -33,9 +37,6 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
     if (topic) {
       const saved = loadProgress(topic.slug);
       if (saved) {
-        // If they already finished, maybe let them start over or view results.
-        // For simplicity, we just start fresh but keep history.
-        // We will load history on finish.
       }
     }
   }, [topic]);
@@ -44,9 +45,12 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
     return <div className="container" style={{ padding: '40px' }}>Тема не найдена</div>;
   }
 
-  // Build lesson sequence: Warmup -> Theory -> Vocabulary -> Exercises -> Results
   const sequence: any[] = [];
   
+  if (topic.goals && topic.goals.length > 0) {
+    sequence.push({ type: 'goals', data: topic.goals });
+  }
+
   if (topic.warmup) {
     sequence.push({ type: 'warmup', data: topic.warmup });
   }
@@ -87,7 +91,7 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
     const prevProgress = loadProgress(topic.slug);
     const newProgress: TopicProgress = {
       slug: topic.slug,
-      completedBlocks: [], // could populate if tracking midway
+      completedBlocks: [],
       answers,
       lastScore: finalScore,
       lastAttemptDate: new Date().toISOString(),
@@ -96,7 +100,6 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
 
     saveProgress(topic.slug, newProgress);
 
-    // Add spaced repetition cards (simple logic: add all vocab and some rules)
     if (topic.vocabulary.length > 0) {
       const nextReview = new Date();
       nextReview.setDate(nextReview.getDate() + 1);
@@ -114,25 +117,46 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
   };
 
   const renderStepContent = (step: any, index: number) => {
+    if (step.type === 'goals') {
+      return (
+        <div style={{ backgroundColor: '#E8F0FE', padding: '24px', borderRadius: '16px', border: '1px solid #cce0ff' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '16px', color: '#1967D2' }}>Цели урока (Today I can...)</h2>
+          <ul style={{ paddingLeft: '20px', marginBottom: '24px', fontSize: '1.1rem' }}>
+            {step.data.map((g: string, i: number) => <li key={i} style={{ marginBottom: '8px' }}>{g}</li>)}
+          </ul>
+          <div style={{ textAlign: 'right' }}>
+            <button 
+              onClick={handleNext}
+              style={{ backgroundColor: '#1967D2', color: 'white', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold' }}
+            >
+              Начать
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     if (step.type === 'warmup') {
       return (
         <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #E0E0E0' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '16px', color: '#333' }}>Введение</h2>
           <p style={{ marginBottom: '16px' }}>{step.data.context}</p>
-          <div style={{ backgroundColor: '#FAFAFA', padding: '16px', borderRadius: '8px', marginBottom: '24px' }}>
-            {step.data.dialogue.map((d: any, i: number) => (
-              <div key={i} style={{ marginBottom: '12px' }}>
-                <div style={{ fontWeight: 'bold' }}>{d.en}</div>
-                <div style={{ color: '#666', fontSize: '0.9rem' }}>{d.ru}</div>
-              </div>
-            ))}
-          </div>
+          {step.data.dialogue && step.data.dialogue.length > 0 && (
+            <div style={{ backgroundColor: '#FAFAFA', padding: '16px', borderRadius: '8px', marginBottom: '24px' }}>
+              {step.data.dialogue.map((d: any, i: number) => (
+                <div key={i} style={{ marginBottom: '12px' }}>
+                  <div style={{ fontWeight: 'bold' }}>{d.en}</div>
+                  <div style={{ color: '#666', fontSize: '0.9rem' }}>{d.ru}</div>
+                </div>
+              ))}
+            </div>
+          )}
           <div style={{ textAlign: 'right' }}>
             <button 
               onClick={handleNext}
               style={{ backgroundColor: '#7FC8A9', color: 'white', padding: '12px 24px', borderRadius: '12px', fontWeight: 'bold' }}
             >
-              Начать урок
+              Дальше
             </button>
           </div>
         </div>
@@ -154,10 +178,18 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
         handleAnswer(ex.id, isCorrect);
       };
 
+      let catTitle = '';
+      if (ex.category === 'warmup') catTitle = 'Разминка (Warm-up)';
+      else if (ex.category === 'guided') catTitle = 'Тренировка с подсказками';
+      else if (ex.category === 'free') catTitle = 'Самостоятельная тренировка';
+      else if (ex.category === 'test') catTitle = 'Финальный тест';
+      else if (ex.category === 'speaking') catTitle = 'Говорение';
+      else if (ex.category === 'exit-ticket') catTitle = 'Exit Ticket';
+
       return (
         <div>
           <div style={{ marginBottom: '16px', color: '#666', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            {ex.category === 'guided' ? 'Тренировка с подсказками' : ex.category === 'free' ? 'Самостоятельная тренировка' : 'Финальный тест'}
+            {catTitle}
           </div>
           
           {ex.type === 'fill-gap' && <ExerciseFillGap key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
@@ -165,6 +197,10 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
           {ex.type === 'matching' && <ExerciseMatching key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
           {ex.type === 'sentence-builder' && <ExerciseSentenceBuilder key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
           {ex.type === 'translate' && <ExerciseTranslate key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
+          {ex.type === 'sort' && <ExerciseSort key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
+          {ex.type === 'error-correction' && <ExerciseErrorCorrection key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
+          {ex.type === 'speaking' && <ExerciseSpeaking key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
+          {ex.type === 'exit-ticket' && <ExerciseExitTicket key={`${ex.id}-${ex.category === 'test' ? retryCount : 0}`} data={ex} onAnswer={onAnswerWrapper} />}
 
           <div style={{ textAlign: 'center', marginTop: '24px' }}>
             {answers[ex.id] !== undefined && (
@@ -236,6 +272,27 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
             else setCurrentStep(0);
           }}
           onGoHome={() => router.push('/')}
+          onGoToTheory={(subtopic) => {
+            // Find the theory block index or vocabulary if it's vocabulary
+            const targetIndex = sequence.findIndex(s => {
+               if (subtopic === 'vocabulary' && s.type === 'vocabulary') return true;
+               // Attempt to match subtopic tag to theory title keyword (very rough match)
+               if (s.type === 'theory') {
+                 const title = s.data.title.toLowerCase();
+                 const sub = subtopic.toLowerCase();
+                 // specific mappings for food topic:
+                 if (sub === 'countable' && title.includes('countable')) return true;
+                 if (sub === 'a-an' && title.includes('a / an')) return true;
+                 if (sub === 'some-any' && (title.includes('some') || title.includes('any'))) return true;
+                 if (sub === 'plural' && title.includes('plural')) return true;
+               }
+               return false;
+            });
+            if (targetIndex !== -1) {
+              setScoreBreakdown(null);
+              setCurrentStep(targetIndex);
+            }
+          }}
         />
       ) : (
         sequence.map((step, index) => (
