@@ -1,11 +1,13 @@
 import { toBeTopic } from './to-be';
 import { presentSimpleTopic } from './present-simple';
+import { presentContinuousTopic } from './present-continuous';
 import { articlesTopic } from './articles';
 import { foodTopic } from './food-countable-uncountable';
 
 export const topicsList = [
   toBeTopic,
   presentSimpleTopic,
+  presentContinuousTopic,
   articlesTopic,
   foodTopic
 ];

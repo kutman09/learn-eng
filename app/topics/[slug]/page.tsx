@@ -285,6 +285,11 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
                  if (sub === 'a-an' && title.includes('a / an')) return true;
                  if (sub === 'some-any' && (title.includes('some') || title.includes('any'))) return true;
                  if (sub === 'plural' && title.includes('plural')) return true;
+                 // specific mappings for present continuous:
+                 if (sub === 'ing-form' && title.includes('ing')) return true;
+                 if (sub === 'form' && (title.includes('образование') || title.includes('to be') || title.includes('отрицание'))) return true;
+                 if (sub === 'simple-vs-continuous' && (title.includes('сравнение') || title.includes('vs'))) return true;
+                 if (sub === 'state-verbs' && (title.includes('state verbs') || title.includes('состояния'))) return true;
                }
                return false;
             });
