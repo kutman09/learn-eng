@@ -290,6 +290,13 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
                  if (sub === 'form' && (title.includes('образование') || title.includes('to be') || title.includes('отрицание'))) return true;
                  if (sub === 'simple-vs-continuous' && (title.includes('сравнение') || title.includes('vs'))) return true;
                  if (sub === 'state-verbs' && (title.includes('state verbs') || title.includes('состояния'))) return true;
+                 // specific mappings for past simple:
+                 if (sub === 'was-were' && (title.includes('was') || title.includes('were') || title.includes('to be'))) return true;
+                 if (sub === 'regular-verbs' && (title.includes('правильн') || title.includes('regular') || title.includes('-ed'))) return true;
+                 if (sub === 'irregular-verbs' && (title.includes('неправильн') || title.includes('irregular'))) return true;
+                 if (sub === 'negative' && (title.includes('отрицательн') || title.includes('didn\'t'))) return true;
+                 if (sub === 'question' && (title.includes('вопросительн') || title.includes('вопрос') || title.includes('did'))) return true;
+                 if (sub === 'markers' && (title.includes('маркер') || title.includes('time markers'))) return true;
                }
                return false;
             });
